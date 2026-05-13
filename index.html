@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Кросворд ППБ · Тема 19</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{color-scheme:light only;}
+html,body{background:#fff;color:#000;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;}
+body.pulse{animation:bp .45s infinite alternate;}
+@keyframes bp{from{background:#fff}to{background:#ffd0d0}}
+.scr{display:none;}.scr.on{display:block;}
+/* NAME */
+#S0{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:#fff;}
+#S0.on{display:flex;}
+.logo{font-size:52px;margin-bottom:10px;text-align:center;}
+.title{font-size:24px;font-weight:900;color:#000;text-align:center;margin-bottom:6px;}
+.dsub{font-size:14px;color:#666;text-align:center;margin-bottom:28px;line-height:1.5;}
+.card{width:100%;max-width:380px;background:#f5f5f5;border-radius:16px;padding:24px;border:2px solid #ddd;}
+.lbl{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#444;margin-bottom:8px;display:block;}
+#nI{width:100%;padding:14px 16px;font-size:18px;font-weight:600;border:2.5px solid #bbb;border-radius:10px;background:#fff;color:#000;font-family:inherit;outline:none;-webkit-appearance:none;}
+#nI:focus{border-color:#000;}
+#nErr{font-size:13px;color:#c00;margin-top:7px;display:none;font-weight:600;}
+#btnGo{display:block;width:100%;margin-top:18px;padding:17px;font-size:19px;font-weight:900;background:#000;color:#fff;border:none;border-radius:12px;font-family:inherit;cursor:pointer;-webkit-appearance:none;touch-action:manipulation;letter-spacing:.02em;}
+.warn{margin-top:14px;font-size:12px;color:#999;text-align:center;line-height:1.6;}
+/* GAME */
+#S1{padding:12px;max-width:720px;margin:0 auto;}
+.tbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#111;border-radius:12px;margin-bottom:12px;}
+.tlbl{font-size:13px;font-weight:700;color:#aaa;}
+#tmr{font-size:32px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;}
+#tmr.warn{color:#ffb300;}
+#tmr.danger{color:#ff1744;animation:td .35s infinite alternate;}
+@keyframes td{from{transform:scale(1);color:#ff1744}to{transform:scale(1.18);color:#ff6060}}
+.sname{font-size:13px;font-weight:700;color:#555;margin-bottom:2px;}
+h1{font-size:15px;font-weight:800;color:#000;margin-bottom:2px;}
+.sub{font-size:12px;color:#555;margin-bottom:14px;}
+.sec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#222;margin-bottom:7px;}
+/* GRID */
+.gw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:10px;}
+.gr{display:grid;gap:3px;width:fit-content;}
+.c{width:var(--cs);height:var(--cs);position:relative;border-radius:3px;cursor:pointer;}
+.c.blk{background:#1a1a1a;cursor:default;}
+.c.act{background:#fff;border:2px solid #666;}
+.c.foc{background:#fff9c4;border:2.5px solid #e65100;}
+.c.ok{background:#00c853;border:2px solid #007c33;}
+.c.er{background:#ff1744;border:2px solid #aa0000;}
+.num{position:absolute;top:2px;left:2px;font-size:7px;line-height:1;font-weight:800;color:#000;pointer-events:none;z-index:3;text-shadow:0 0 3px #fff,0 0 3px #fff;}
+.c.ok .num,.c.er .num{color:#fff;text-shadow:0 0 3px rgba(0,0,0,.8),0 0 3px rgba(0,0,0,.8);}
+.c.foc .num{color:#000;text-shadow:0 0 3px #fff9c4,0 0 3px #fff9c4;}
+/* letter display — just a div, not input */
+.cl-disp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--cs)*.46);font-weight:800;color:#000;text-transform:uppercase;pointer-events:none;z-index:1;}
+.c.ok .cl-disp,.c.er .cl-disp{color:#fff;}
+/* CLUES */
+.cb{margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #ccc;}
+.cb.last{border-bottom:none;}
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+.cg h3{font-size:11px;font-weight:800;color:#444;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+.cl{display:flex;gap:5px;margin-bottom:8px;line-height:1.5;}
+.cn{font-weight:900;min-width:20px;font-size:15px;color:#000;flex-shrink:0;}
+.ct{font-size:15px;font-weight:600;color:#000;}
+#btnChk{display:block;width:100%;margin-top:14px;padding:14px;font-size:16px;font-weight:900;background:#000;color:#fff;border:none;border-radius:10px;font-family:inherit;cursor:pointer;-webkit-appearance:none;touch-action:manipulation;}
+/* OVERLAYS */
+.ov{position:fixed;inset:0;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;}
+.ov.on{display:flex;}
+.ov.g5{background:#7a5c00;}.ov.g4{background:#004d18;}.ov.g3{background:#7a3000;}.ov.g2{background:#700000;}
+.ov-who{font-size:min(5vw,22px);font-weight:700;color:rgba(255,255,255,.8);margin-bottom:6px;}
+.ov-stars{font-size:min(9vw,40px);margin-bottom:6px;letter-spacing:4px;}
+.ov-num{font-size:min(62vw,62vh);font-weight:900;color:#fff;line-height:.85;text-shadow:0 8px 40px rgba(0,0,0,.6);animation:pop .4s cubic-bezier(.175,.885,.32,1.4);}
+@keyframes pop{from{transform:scale(.15);opacity:0}to{transform:scale(1);opacity:1}}
+.ov-lbl{font-size:min(10vw,50px);font-weight:900;color:#fff;letter-spacing:.04em;margin-top:4px;}
+.ov-det{font-size:min(4.5vw,20px);color:rgba(255,255,255,.8);font-weight:600;margin-top:8px;margin-bottom:28px;}
+.dot{font-size:10px;color:rgba(255,255,255,.1);cursor:default;margin-top:20px;}
+#OVcheat{background:#080000;}
+.ch-ico{font-size:min(22vw,100px);animation:sh .25s infinite alternate;}
+@keyframes sh{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+.ch-word{font-size:min(26vw,120px);font-weight:900;color:#ff1744;text-shadow:0 0 80px #ff1744,0 0 160px #ff0000;animation:cp .4s infinite alternate;}
+@keyframes cp{from{opacity:1;transform:scale(1)}to{opacity:.55;transform:scale(1.06)}}
+.ch-sub{font-size:min(5vw,22px);color:rgba(255,100,100,.9);font-weight:700;margin-top:14px;line-height:1.6;}
+@media(max-width:440px){.cr{grid-template-columns:1fr;}.cg:first-child{margin-bottom:8px;}}
+</style>
+</head>
+<body>
+
+<!-- HIDDEN INPUT — єдиний input для вводу на мобільних -->
+<input id="HI" type="text"
+  autocomplete="off" autocorrect="off" autocapitalize="characters"
+  spellcheck="false" inputmode="text"
+  style="position:fixed;top:50%;left:50%;width:2px;height:2px;opacity:0;border:none;outline:none;padding:0;z-index:-1;transform:translate(-50%,-50%);">
+
+<!-- NAME -->
+<div id="S0" class="on">
+  <div class="logo">📋</div>
+  <div class="title">Кросворд ППБ</div>
+  <div class="dsub">Загальна тактика · Тема 19, заняття 3<br>Процес прийняття бойового рішення</div>
+  <div class="card">
+    <label class="lbl" for="nI">Прізвище та ім'я</label>
+    <input type="text" id="nI" placeholder="Наприклад: Коваль Іван"
+      autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
+      onkeydown="if(event.key==='Enter')doStart()">
+    <div id="nErr">⚠ Введіть прізвище та ім'я (мін. 2 символи)</div>
+    <button id="btnGo" type="button" onclick="doStart()">▶&nbsp;&nbsp;Розпочати спробу</button>
+    <div class="warn">⚠ Дозволяється лише одна спроба.<br>Вихід із вікна = оцінка 2.</div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="S1" class="scr">
+  <div class="tbar"><span class="tlbl">⏱ Кросворд ППБ · 4 хв</span><span id="tmr">4:00</span></div>
+  <div class="sname" id="sName"></div>
+  <h1>Терміни 5–8 етапів ППБ</h1>
+  <p class="sub">Загальна тактика · Тема 19, заняття 3</p>
+  <p class="sec">Частина А</p>
+  <div class="gw"><div id="cwA" class="gr"></div></div>
+  <div class="cb">
+    <div class="cr">
+      <div class="cg">
+        <h3>Горизонталь</h3>
+        <div class="cl"><span class="cn">1.</span><span class="ct">Узгоджені дії підрозділів між собою і зі старшим командиром (9)</span></div>
+        <div class="cl"><span class="cn">3.</span><span class="ct">Місцевий предмет для організації спостереження та вогню (8)</span></div>
+        <div class="cl"><span class="cn">4.</span><span class="ct">Обов'язковий крок 7-го етапу ППБ — ______ розуміння підлеглими бойового наказу (9)</span></div>
+      </div>
+      <div class="cg">
+        <h3>Вертикаль</h3>
+        <div class="cl"><span class="cn">1.</span><span class="ct">______ дій — конкретний спосіб виконання бойового завдання (скор. ВД) (7)</span></div>
+        <div class="cl"><span class="cn">2.</span><span class="ct">Разом з противником — основний об'єкт вивчення під час рекогносцировки (10)</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="sec">Частина Б</p>
+  <div class="gw"><div id="cwB" class="gr"></div></div>
+  <div class="cb last">
+    <div class="cr">
+      <div class="cg">
+        <h3>Горизонталь</h3>
+        <div class="cl"><span class="cn">5.</span><span class="ct">Цілеспрямована діяльність командира з підтримання боєздатності підрозділу (10)</span></div>
+        <div class="cl"><span class="cn">8.</span><span class="ct">Директивний документ постановки завдань підлеглим; продукт 7-го етапу ППБ (5)</span></div>
+      </div>
+      <div class="cg">
+        <h3>Вертикаль</h3>
+        <div class="cl"><span class="cn">6.</span><span class="ct">Збір і вивчення даних про противника та місцевість; основа 5-го етапу ППБ (8)</span></div>
+        <div class="cl"><span class="cn">7.</span><span class="ct">______ командира — розділ 3.1 у структурі бойового наказу (ОПОРД) (5)</span></div>
+        <div class="cl"><span class="cn">9.</span><span class="ct">Те, що підрозділ отримує від командира у пункті 3.2 бойового наказу (8)</span></div>
+      </div>
+    </div>
+  </div>
+  <button id="btnChk" type="button" onclick="doCheck()">✓&nbsp;&nbsp;Здати роботу</button>
+</div>
+
+<!-- OVERLAYS -->
+<div class="ov" id="OVgrade">
+  <div class="ov-who" id="ovWho"></div><div class="ov-stars" id="ovStars"></div>
+  <div class="ov-num" id="ovNum"></div><div class="ov-lbl" id="ovLbl"></div>
+  <div class="ov-det" id="ovDet"></div><div class="dot" onclick="adm()">●</div>
+</div>
+<div class="ov" id="OVcheat">
+  <div class="ch-ico">🚨</div><div class="ch-word">ШАХРАЙ</div>
+  <div class="ch-sub" id="chWho"></div>
+  <div class="ch-sub">Вихід із вікна виявлено.<br>Оцінка: <strong style="font-size:1.5em;color:#ff6060">2</strong></div>
+  <div class="dot" onclick="adm()">●</div>
+</div>
+<div class="ov" id="OVdone">
+  <div class="ov-who" id="dnWho"></div><div class="ov-stars" id="dnStars"></div>
+  <div class="ov-num" id="dnNum"></div><div class="ov-lbl" id="dnLbl"></div>
+  <div class="ov-det" id="dnDet"></div><div class="dot" onclick="adm()">●</div>
+</div>
+
+<script>
+/* ═══ GRID DATA ═══ */
+var GA=[
+['В','З','А','Є','М','О','Д','І','Я',null,null,null],
+['А',null,'О','Р','І','Є','Н','Т','И','Р',null,null],
+['Р',null,null,null,'С',null,null,null,null,null,null,null],
+['І',null,null,null,'Ц',null,null,null,null,null,null,null],
+['А',null,null,'П','Е','Р','Е','В','І','Р','К','А'],
+['Н',null,null,null,'В',null,null,null,null,null,null,null],
+['Т',null,null,null,'І',null,null,null,null,null,null,null],
+[null,null,null,null,'С',null,null,null,null,null,null,null],
+[null,null,null,null,'Т',null,null,null,null,null,null,null],
+[null,null,null,null,'Ь',null,null,null,null,null,null,null]];
+var NA={'0,0':'1','0,4':'2','1,2':'3','4,3':'4'};
+var GB=[
+['У','П','Р','А','В','Л','І','Н','Н','Я',null],
+[null,null,'О',null,null,null,'Н','А','К','А','З'],
+[null,null,'З',null,null,null,null,'М',null,null,'А'],
+[null,null,'В',null,null,null,null,'І',null,null,'В'],
+[null,null,'І',null,null,null,null,'Р',null,null,'Д'],
+[null,null,'Д',null,null,null,null,null,null,null,'А'],
+[null,null,'К',null,null,null,null,null,null,null,'Н'],
+[null,null,'А',null,null,null,null,null,null,null,'Н'],
+[null,null,null,null,null,null,null,null,null,null,'Я']];
+var NB={'0,0':'5','0,2':'6','0,7':'7','1,6':'8','1,10':'9'};
+var WW=[
+ {p:'a',c:[[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8]]},
+ {p:'a',c:[[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9]]},
+ {p:'a',c:[[4,3],[4,4],[4,5],[4,6],[4,7],[4,8],[4,9],[4,10],[4,11]]},
+ {p:'a',c:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]]},
+ {p:'a',c:[[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4]]},
+ {p:'b',c:[[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[0,9]]},
+ {p:'b',c:[[1,6],[1,7],[1,8],[1,9],[1,10]]},
+ {p:'b',c:[[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2]]},
+ {p:'b',c:[[0,7],[1,7],[2,7],[3,7],[4,7]]},
+ {p:'b',c:[[1,10],[2,10],[3,10],[4,10],[5,10],[6,10],[7,10],[8,10]]}];
+var GC={5:{cls:'g5',n:'ВІДМІННО',s:'★★★★★'},4:{cls:'g4',n:'ДОБРЕ',s:'★★★★☆'},3:{cls:'g3',n:'ЗАДОВІЛЬНО',s:'★★★☆☆'},2:{cls:'g2',n:'НЕЗАДОВІЛЬНО',s:'★★☆☆☆'}};
+var LS='ppb_t19_f';
+
+/* ═══ STATE ═══ */
+var OK={},ER={},VV={};
+var over=false,started=false,pName='';
+var tLeft=240,tInt=null,cTmr=null;
+/* active cell */
+var aP=null,aR=null,aC2=null,aDir='h'; /* aDir: 'h' or 'v' */
+
+function kk(p,r,c){return p+'|'+r+'|'+c;}
+function GG(p){return p==='a'?GA:GB;}
+function locked(p,r,c){var k=kk(p,r,c);return !!OK[k]||!!ER[k];}
+function ls(op,k,v){try{if(op==='g')return localStorage.getItem(k);if(op==='s')localStorage.setItem(k,v);if(op==='d')localStorage.removeItem(k);}catch(e){return null;}}
+function getDisp(p,r,c){var d=document.getElementById(kk(p,r,c));return d?d.querySelector('.cl-disp'):null;}
+
+/* ═══ DIRECTION HELPERS ═══ */
+function hasH(G,r,c){return (c>0&&G[r][c-1]!==null)||(c<G[r].length-1&&G[r][c+1]!==null);}
+function hasV(G,r,c){return (r>0&&G[r-1]&&G[r-1][c]!==null)||(r<G.length-1&&G[r+1]&&G[r+1][c]!==null);}
+
+/* ═══ ACTIVATE CELL ═══ */
+function setActive(p,r,c,dir){
+  /* deselect old */
+  if(aP!==null){
+    var od=document.getElementById(kk(aP,aR,aC2));
+    if(od&&od.classList.contains('foc'))od.className='c act';
+  }
+  aP=p;aR=r;aC2=c;
+  if(dir!==undefined)aDir=dir;
+  var nd=document.getElementById(kk(p,r,c));
+  if(nd&&nd.classList.contains('act'))nd.className='c foc';
+}
+
+/* ═══ TAP CELL ═══ */
+function tapCell(p,r,c){
+  if(over||locked(p,r,c))return;
+  var G=GG(p);
+  var h=hasH(G,r,c),v=hasV(G,r,c);
+  var newDir=aDir;
+  if(aP===p&&aR===r&&aC2===c){
+    /* same cell tapped again → toggle */
+    if(h&&v)newDir=(aDir==='h')?'v':'h';
+  } else {
+    if(h&&!v)newDir='h';
+    else if(v&&!h)newDir='v';
+    else newDir='h'; /* default horizontal */
+  }
+  setActive(p,r,c,newDir);
+  /* focus hidden input — keeps keyboard open */
+  var hi=document.getElementById('HI');
+  hi.value='';
+  hi.focus();
+  if(!started)started=true;
+}
+
+/* ═══ NAVIGATE ═══ */
+function moveNext(){
+  if(aP===null)return;
+  var G=GG(aP);
+  if(aDir==='h'){
+    for(var sc=aC2+1;sc<G[aR].length;sc++){if(G[aR][sc]!==null&&!locked(aP,aR,sc)){setActive(aP,aR,sc,'h');return;}}
+  } else {
+    for(var sr=aR+1;sr<G.length;sr++){if(G[sr]&&G[sr][aC2]!==null&&!locked(aP,sr,aC2)){setActive(aP,sr,aC2,'v');return;}}
+  }
+}
+function movePrev(){
+  if(aP===null)return;
+  var G=GG(aP);
+  if(aDir==='h'){
+    for(var sc=aC2-1;sc>=0;sc--){if(G[aR][sc]!==null&&!locked(aP,aR,sc)){setActive(aP,aR,sc,'h');return;}}
+  } else {
+    for(var sr=aR-1;sr>=0;sr--){if(G[sr]&&G[sr][aC2]!==null&&!locked(aP,sr,aC2)){setActive(aP,sr,aC2,'v');return;}}
+  }
+}
+
+/* ═══ HIDDEN INPUT EVENTS ═══ */
+var HI=document.getElementById('HI');
+HI.addEventListener('input',function(){
+  if(over||aP===null){this.value='';return;}
+  var raw=this.value.toUpperCase().replace(/[^А-ЯЄІЇҐ]/gi,'');
+  this.value=''; /* always clear immediately */
+  if(!raw)return;
+  var ch=raw.slice(-1);
+  /* write to active cell */
+  if(locked(aP,aR,aC2))return;
+  VV[kk(aP,aR,aC2)]=ch;
+  var d=document.getElementById(kk(aP,aR,aC2));
+  if(d){var dp=d.querySelector('.cl-disp');if(dp)dp.textContent=ch;}
+  moveNext();
+});
+HI.addEventListener('keydown',function(e){
+  if(e.key==='Backspace'){
+    if(aP===null)return;
+    var k=kk(aP,aR,aC2);
+    if(locked(aP,aR,aC2)){movePrev();return;}
+    if(VV[k]){
+      VV[k]='';
+      var d=document.getElementById(k);
+      if(d){var dp=d.querySelector('.cl-disp');if(dp)dp.textContent='';}
+    } else {
+      movePrev();
+    }
+  }
+});
+/* keep keyboard open on blur — refocus HI unless game over or finishing */
+var finishing=false;
+HI.addEventListener('blur',function(){
+  if(over||finishing||aP===null)return;
+  var active=document.activeElement;
+  if(active&&(active.id==='btnChk'||active.id==='btnGo'))return;
+  setTimeout(function(){
+    if(!over&&!finishing&&aP!==null&&document.getElementById('S1').classList.contains('on')){
+      try{HI.focus();}catch(ex){}
+    }
+  },120);
+});
+
+/* ═══ GRADE ═══ */
+function calcGrade(){
+  var ok=0;
+  WW.forEach(function(w){if(w.c.every(function(x){return !!OK[kk(w.p,x[0],x[1])]}))ok++;});
+  return{ok:ok,g:Math.max(2,Math.min(5,Math.floor(ok/2)+1))};
+}
+
+/* Core overlay renderer — synchronous, no setTimeout */
+function renderOverlay(cheat,g,ok,who,det){
+  /* 1. hide keyboard immediately */
+  finishing=true;
+  try{HI.blur();}catch(ex){}
+  try{document.activeElement&&document.activeElement.blur();}catch(ex){}
+
+  /* 2. populate overlay DOM before making visible */
+  if(cheat){
+    document.getElementById('chWho').textContent=who;
+    var co=document.getElementById('OVcheat');
+    co.style.display='flex';
+    co.className='ov on g2';
+  } else {
+    var cfg=GC[g];
+    var ov=document.getElementById('OVgrade');
+    document.getElementById('ovWho').textContent=who;
+    document.getElementById('ovStars').textContent=cfg.s;
+    document.getElementById('ovNum').textContent=g;
+    document.getElementById('ovLbl').textContent=cfg.n;
+    document.getElementById('ovDet').textContent='Правильних слів: '+ok+'/'+WW.length+' · '+det;
+    ov.style.display='flex';
+    ov.className='ov on '+cfg.cls;
+  }
+
+  /* 3. force repaint on iOS/Android — read a layout property */
+  try{document.body.offsetHeight;}catch(ex){}
+
+  /* 4. scroll to top so overlay covers everything */
+  try{window.scrollTo(0,0);}catch(ex){}
+}
+
+function showGrade(g,ok,who,det,cheat){
+  over=true;
+  clearInterval(tInt);clearTimeout(cTmr);
+  document.body.classList.remove('pulse');
+  aP=null;
+  ls('s',LS,JSON.stringify({name:who,grade:g,ok:ok,cheated:!!cheat,date:new Date().toLocaleString('uk-UA')}));
+  /* Render immediately, then also after 2 rAF for slow Android renderers */
+  renderOverlay(cheat,g,ok,who,det);
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      renderOverlay(cheat,g,ok,who,det);
+    });
+  });
+}
+
+function finish(early){
+  if(over)return;
+  ['a','b'].forEach(function(p){
+    GG(p).forEach(function(row,r){row.forEach(function(v,c){
+      if(v===null)return;
+      var k=kk(p,r,c);if(OK[k]||ER[k])return;
+      var entered=(VV[k]||'').toUpperCase();
+      if(entered===v){OK[k]=true;var d=document.getElementById(k);if(d)d.className='c ok';}
+      else if(entered!==''){ER[k]=true;var d2=document.getElementById(k);if(d2)d2.className='c er';}
+    });});
+  });
+  var res=calcGrade();
+  showGrade(res.g,res.ok,pName,early?'Завершено достроково':'Час вичерпано',false);
+}
+
+/* ═══ TIMER ═══ */
+function startTimer(){
+  var el=document.getElementById('tmr');
+  tInt=setInterval(function(){
+    if(over){clearInterval(tInt);return;}
+    tLeft--;
+    var m=Math.floor(tLeft/60),s=tLeft%60;
+    el.textContent=m+':'+(s<10?'0':'')+s;
+    if(tLeft<=30){el.className='danger';document.body.classList.add('pulse');}
+    else if(tLeft<=60)el.className='warn';
+    if(tLeft<=0){clearInterval(tInt);finish(false);}
+  },1000);
+}
+
+/* ═══ ANTI-CHEAT — МИТТЄВА РЕАКЦІЯ ═══ */
+var cheatPoll=null;
+
+function triggerCheat(){
+  if(over)return;
+  over=true;
+  finishing=true;
+  clearInterval(tInt);clearInterval(cheatPoll);clearTimeout(cTmr);
+  document.body.classList.remove('pulse');
+  ls('s',LS,JSON.stringify({name:pName,grade:2,ok:0,cheated:true,date:new Date().toLocaleString('uk-UA')}));
+  showGrade(2,0,pName,'Виявлено вихід із вікна',true);
+}
+
+/* 1. visibilitychange — основний, спрацьовує ОДРАЗУ без затримки */
+document.addEventListener('visibilitychange',function(){
+  if(!started||over)return;
+  if(document.hidden){
+    triggerCheat();
+  } else {
+    /* повернулись — якщо вже шахрай, перемалювати overlay */
+    if(over){
+      var saved=ls('g',LS);
+      try{var d=JSON.parse(saved);if(d&&d.cheated)renderOverlay(true,2,0,d.name,'');}catch(ex){}
+    }
+  }
+});
+
+/* 2. pagehide — iOS Safari іноді пропускає visibilitychange при згортанні */
+window.addEventListener('pagehide',function(){
+  if(!started||over)return;
+  /* pagehide може бути при reload — ігноруємо якщо persisted */
+  triggerCheat();
+});
+
+/* 3. blur на window — ловить переключення застосунків на Android */
+window.addEventListener('blur',function(){
+  if(!started||over)return;
+  /* невелика затримка щоб не спрацьовувало на тап по клітинці */
+  cTmr=setTimeout(function(){
+    if(!over&&document.hidden)triggerCheat();
+  },300);
+});
+window.addEventListener('focus',function(){
+  clearTimeout(cTmr);
+  if(over){
+    var saved=ls('g',LS);
+    try{var d=JSON.parse(saved);if(d&&d.cheated)renderOverlay(true,2,0,d.name,'');}catch(ex){}
+  }
+});
+
+/* ═══ BUILD GRID ═══ */
+function cs(){return Math.max(28,Math.min(Math.floor((Math.min(window.innerWidth-24,720)-36)/12),46));}
+function build(id,G,N,p){
+  var el=document.getElementById(id),s=cs();
+  el.style.cssText='--cs:'+s+'px;grid-template-columns:repeat('+G[0].length+','+s+'px);gap:3px;';
+  el.innerHTML='';
+  for(var r=0;r<G.length;r++)for(var c=0;c<G[r].length;c++){
+    var v=G[r][c],d=document.createElement('div');
+    if(v===null){d.className='c blk';el.appendChild(d);continue;}
+    var k=kk(p,r,c);d.id=k;
+    /* set class */
+    d.className='c '+(OK[k]?'ok':ER[k]?'er':'act');
+    /* number */
+    if(N[r+','+c]){var n=document.createElement('span');n.className='num';n.textContent=N[r+','+c];d.appendChild(n);}
+    /* letter display */
+    var disp=document.createElement('div');disp.className='cl-disp';
+    if(OK[k])disp.textContent=v;
+    else if(ER[k])disp.textContent=VV[k]||'';
+    else disp.textContent=VV[k]||'';
+    d.appendChild(disp);
+    /* tap handler */
+    if(!OK[k]&&!ER[k]&&!over){
+      (function(pp,rr,cc){
+        d.addEventListener('touchend',function(e){e.preventDefault();tapCell(pp,rr,cc);});
+        d.addEventListener('mousedown',function(e){e.preventDefault();tapCell(pp,rr,cc);});
+      })(p,r,c);
+    }
+    el.appendChild(d);
+  }
+}
+
+/* ═══ START GAME ═══ */
+function startGame(n){
+  pName=n;
+  document.getElementById('S0').className='scr';
+  document.getElementById('S1').className='scr on';
+  document.getElementById('sName').textContent='👤 '+n;
+  build('cwA',GA,NA,'a');build('cwB',GB,NB,'b');
+  startTimer();
+  /* pre-focus hidden input */
+  setTimeout(function(){try{HI.focus();}catch(ex){}},300);
+}
+
+/* ═══ ALREADY DONE ═══ */
+function showDone(data){
+  var cfg=GC[data.grade]||GC[2];
+  var ov=document.getElementById('OVdone');
+  ov.className='ov on '+(data.cheated?'g2':cfg.cls);
+  document.getElementById('dnWho').textContent=(data.cheated?'⚠ ':'')+data.name;
+  document.getElementById('dnStars').textContent=cfg.s;
+  document.getElementById('dnNum').textContent=data.grade;
+  document.getElementById('dnLbl').textContent=data.cheated?'ШАХРАЙ':cfg.n;
+  document.getElementById('dnDet').textContent='Слів: '+(data.ok||0)+'/'+WW.length+' · '+data.date;
+}
+
+/* ═══ ADMIN ═══ */
+var aC=0,aT=null;
+function adm(){aC++;clearTimeout(aT);aT=setTimeout(function(){aC=0;},2000);if(aC>=5){aC=0;ls('d',LS);location.reload();}}
+
+/* ═══ PUBLIC ═══ */
+function doStart(){
+  var n=(document.getElementById('nI').value||'').trim();
+  if(n.length<2){document.getElementById('nErr').style.display='block';document.getElementById('nI').focus();return;}
+  document.getElementById('nErr').style.display='none';
+  startGame(n);
+}
+function doCheck(){finish(true);}
+
+/* ═══ INIT ═══ */
+window.onload=function(){
+  try{var s=ls('g',LS);if(s){var d=JSON.parse(s);if(d&&d.grade){document.getElementById('S0').className='scr';showDone(d);return;}}}catch(e){}
+};
+window.addEventListener('resize',function(){if(document.getElementById('S1').classList.contains('on')){build('cwA',GA,NA,'a');build('cwB',GB,NB,'b');}});
+</script>
+</body>
+</html>
